@@ -4,8 +4,6 @@ import os
 import json
 from uuid import uuid4
 
-from .config import load_config
-
 endpoint = 'https://api.banana.dev/'
 # Endpoint override for development
 if 'BANANA_URL' in os.environ:
@@ -16,22 +14,33 @@ if 'BANANA_URL' in os.environ:
         endpoint = os.environ['BANANA_URL']
     print("Hitting endpoint:", endpoint)
 
-config = load_config()
-
 # THE MAIN FUNCTIONS
 # ___________________________________
 
 
 def run_main(api_key, model_key, model_inputs):
-    call_id = start_api(api_key, model_key, model_inputs)
+    result = start_api(api_key, model_key, model_inputs)
+
+    # likely we get results on first call
+    if result["finished"]:
+        dict_out = {
+            "id": result["id"],
+            "message": result["message"],
+            "created": result["created"],
+            "apiVersion": result["apiVersion"],
+            "modelOutputs": result["modelOutputs"]
+        }
+        return dict_out
+
+    # else it's long running, so poll for result
     while True:
-        dict_out = check_api(api_key, call_id)
+        dict_out = check_api(api_key, result["callID"])
         if dict_out['message'].lower() == "success":
             return dict_out
 
 def start_main(api_key, model_key, model_inputs):
-    call_id = start_api(api_key, model_key, model_inputs)
-    return call_id
+    result = start_api(api_key, model_key, model_inputs, start_only=True)
+    return result["callID"]
 
 def check_main(api_key, call_id):
     dict_out = check_api(api_key, call_id)
@@ -41,20 +50,19 @@ def check_main(api_key, call_id):
 # THE API CALLING FUNCTIONS
 # ________________________
 
-# Takes in start params, returns call ID
-def start_api(api_key, model_key, model_inputs):
+# Takes in start params and returns the full server json response
+def start_api(api_key, model_key, model_inputs, start_only=False):
     global endpoint
-    global config
-    route_start = "start/v2/"
+    route_start = "start/v3/"
     url_start = endpoint + route_start
 
     payload = {
         "id": str(uuid4()),
-        "created": time.time(),
+        "created": int(time.time()),
         "apiKey" : api_key,
         "modelKey" : model_key,
         "modelInputs" : model_inputs,
-        "config": config
+        "startOnly": start_only
     }
 
     response = requests.post(url_start, json=payload)
@@ -67,18 +75,15 @@ def start_api(api_key, model_key, model_inputs):
     except:
         raise Exception("server error: returned invalid json")
 
-    try:
-        if "error" in out['message'].lower():
-            raise Exception(out['message'])
-        call_id = out['callID']
-        return call_id
-    except:
-        raise Exception("server error: Failed to return call_id")
+    if "error" in out['message'].lower():
+        raise Exception(out['message'])
 
-# The bare async checker.
+    return out
+
+# Takes in call_id to return the server response
 def check_api(api_key, call_id):
     global endpoint
-    route_check = "check/v2/"
+    route_check = "check/v3/"
     url_check = endpoint + route_check
     # Poll server for completed task
 
