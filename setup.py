@@ -1,9 +1,16 @@
-from distutils.core import setup
 import setuptools
+from distutils.core import setup
 from pathlib import Path
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
+
+# Added requirements
+requirements = [
+    'httpx',
+    'pydantic',
+    'loguru'
+]
 
 setup(
   name = 'banana_dev',
@@ -24,7 +31,7 @@ setup(
     "idna==3.3",
     "requests==2.26.0",
     "urllib3==1.26.7",
-  ],
+  ] + requirements,
   classifiers=[
     'Development Status :: 5 - Production/Stable',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
     'Intended Audience :: Developers',

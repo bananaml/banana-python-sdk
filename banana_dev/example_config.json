@@ -1,0 +1,8 @@
+{
+    "apikey": null,
+    "current_model": "",
+    "models": {
+        "mymodel": "mymodelkey"
+    },
+    "url": "https://api.banana.dev"
+}
