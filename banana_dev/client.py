@@ -260,7 +260,6 @@ class BananaRun:
                 config_path = config_path,
                 default_timeout = default_timeout,
                 json_results = json_results,
-                overwrite = overwrite,
                 **kwargs
             )
 
