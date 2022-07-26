@@ -228,3 +228,128 @@ class BananaClient:
         Call the model with the given inputs
         """
         return self.call_api(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
+    
+
+## Compatibility Class 
+
+class BananaRun:
+    api: BananaClient = None
+
+    @classmethod
+    def init_api(
+        cls, 
+        apikey: Optional[str] = None,
+        models: Optional[Dict[str, str]] = None,
+        model_name: Optional[str] = None,
+        model_key: Optional[str] = None,
+        config_path: Optional[str] = None, 
+        default_timeout: int = 30, 
+        json_results: bool = True, 
+        overwrite: bool = False,
+        **kwargs
+        ):
+        """
+        Initialize the API Client
+        """
+        if cls.api is None or overwrite:
+            cls.api = BananaClient(
+                apikey = apikey,
+                models = models,
+                model_name = model_name,
+                model_key = model_key,
+                config_path = config_path,
+                default_timeout = default_timeout,
+                json_results = json_results,
+                overwrite = overwrite,
+                **kwargs
+            )
+
+    @classmethod
+    def run(
+        cls, 
+        model_inputs: Any, 
+        model_name: Optional[str] = None, 
+        start_only: bool = False, 
+        ignore_errors: bool = False, 
+        timeout: Optional[int] = None, 
+        apikey: Optional[str] = None, 
+        model_key: Optional[str] = None, 
+        **kwargs
+    ) -> Union[Dict[str, Any], ModelResults]:
+        cls.init_api(model_name = model_name, model_key = model_key, apikey = apikey, overwrite = (apikey and model_key), **kwargs)
+        return cls.api.run(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
+    
+    @classmethod
+    def start(
+        cls, 
+        model_inputs: Any, 
+        model_name: Optional[str] = None, 
+        start_only: bool = False, 
+        ignore_errors: bool = False, 
+        timeout: Optional[int] = None, 
+        apikey: Optional[str] = None, 
+        model_key: Optional[str] = None, 
+        **kwargs
+    ) -> Dict[str, Any]:
+        cls.init_api(model_name = model_name, model_key = model_key, apikey = apikey, overwrite = (apikey and model_key), **kwargs)
+        return cls.api.start_api(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
+
+
+    @classmethod
+    def check(
+        cls, 
+        call_id: str, 
+        timeout: Optional[int] = None,
+        model_name: Optional[str] = None,
+        apikey: Optional[str] = None, 
+        model_key: Optional[str] = None, 
+        **kwargs
+    ) -> Dict[str, Any]:
+        cls.init_api(model_name = model_name, model_key = model_key, apikey = apikey, overwrite = (apikey and model_key), **kwargs)
+        return cls.api.check_api(call_id = call_id, timeout = timeout, **kwargs)
+
+    @classmethod
+    async def async_run(
+        cls, 
+        model_inputs: Any, 
+        model_name: Optional[str] = None, 
+        start_only: bool = False, 
+        ignore_errors: bool = False, 
+        timeout: Optional[int] = None, 
+        apikey: Optional[str] = None, 
+        model_key: Optional[str] = None, 
+        **kwargs
+    ) -> Union[Dict[str, Any], ModelResults]:
+        cls.init_api(model_name = model_name, model_key = model_key, apikey = apikey, overwrite = (apikey and model_key), **kwargs)
+        return await cls.api.async_run(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
+    
+    @classmethod
+    async def async_start(
+        cls, 
+        model_inputs: Any, 
+        model_name: Optional[str] = None, 
+        start_only: bool = False, 
+        ignore_errors: bool = False, 
+        timeout: Optional[int] = None, 
+        apikey: Optional[str] = None, 
+        model_key: Optional[str] = None, 
+        **kwargs
+    ) -> Dict[str, Any]:
+        cls.init_api(model_name = model_name, model_key = model_key, apikey = apikey, overwrite = (apikey and model_key), **kwargs)
+        return await cls.api.async_start_api(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
+
+
+    @classmethod
+    async def async_check(
+        cls, 
+        call_id: str, 
+        timeout: Optional[int] = None,
+        model_name: Optional[str] = None,
+        apikey: Optional[str] = None, 
+        model_key: Optional[str] = None, 
+        **kwargs
+    ) -> Dict[str, Any]:
+        cls.init_api(model_name = model_name, model_key = model_key, apikey = apikey, overwrite = (apikey and model_key), **kwargs)
+        return await cls.api.async_check_api(call_id = call_id, timeout = timeout, **kwargs)
+
+    
