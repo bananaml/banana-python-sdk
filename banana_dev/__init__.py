@@ -1,6 +1,6 @@
-from .models import BananaModel, ModelResults
+from .models import BananaModel
 from .configs import BananaConfig
-from .client import BananaClient, BananaRun
+from .client import BananaClient, BananaLogs, BananaRun
 
 # compat layer for old API through aliasing
 run = BananaRun.run

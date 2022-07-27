@@ -2,9 +2,9 @@ import httpx
 import time
 from uuid import uuid4
 from loguru import logger
-from typing import Dict, Optional, Any, Union
+from typing import Dict, Optional, Any, List, Union
 
-from .models import BananaModel, ModelResults
+from .models import BananaModel
 from .configs import BananaConfig
 from .utils import timer
 
@@ -17,7 +17,6 @@ class BananaClient:
         model_key: Optional[str] = None,
         config_path: Optional[str] = None, 
         default_timeout: int = 30, 
-        json_results: bool = True, 
         **kwargs
     ):
         """
@@ -26,7 +25,6 @@ class BananaClient:
         self.config = BananaConfig
         self.config_path = config_path
         self.default_timeout = default_timeout
-        self.json_results = json_results
         if config_path: 
             self.config.load_config(config_path)
         elif any([apikey, models, model_name, model_key]):
@@ -41,10 +39,11 @@ class BananaClient:
         # Initialize a Sync Client and an Async Client
         self.client = httpx.Client(base_url = self.config.base_url, **kwargs)
         self.aclient = httpx.AsyncClient(base_url = self.config.base_url, **kwargs)
+
     
 
     # API Management Methods
-    def call_api(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, json_results: Optional[bool] = None, **kwargs) -> Union[Dict[str, Any], ModelResults]:
+    def call_api(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Dict[str, Any]:
         """
         Fetch results from a model
         """
@@ -52,12 +51,12 @@ class BananaClient:
         results = self.start_api(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
         # if ignore errors is present, then it would return the response
         if not isinstance(results, dict): return None
-        if results["finished"]: return self._return_results(results, json_results = json_results, duration = start_timer)
+        if results["finished"]: return self._return_results(results, duration = start_timer)
         while True:
             results = self.check_api(call_id = results["callID"], timeout = timeout, **kwargs)
             if not isinstance(results, dict): return None
             if results['message'].lower() == "success": 
-                return self._return_results(results, json_results = json_results, duration = start_timer)
+                return self._return_results(results, duration = start_timer)
 
 
     def start_api(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Dict[str, Any]:
@@ -91,7 +90,7 @@ class BananaClient:
         return self._validate_response(response)
     
     # Async API Management Methods
-    async def async_call_api(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, json_results: Optional[bool] = None, **kwargs) -> Union[Dict[str, Any], ModelResults]:
+    async def async_call_api(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Dict[str, Any]:
         """
         Fetch results from a model
         """
@@ -99,12 +98,12 @@ class BananaClient:
         results = await self.async_start_api(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
         # if ignore errors is present, then it would return the response
         if not isinstance(results, dict): return None
-        if results["finished"]: return self._return_results(results, json_results = json_results, duration = start_timer)
+        if results["finished"]: return self._return_results(results, duration = start_timer)
         while True:
             results = await self.async_check_api(call_id = results["callID"], timeout = timeout, **kwargs)
             if not isinstance(results, dict): return None
             if results['message'].lower() == "success": 
-                return self._return_results(results, json_results = json_results, duration = start_timer)
+                return self._return_results(results, duration = start_timer)
 
 
     async def async_start_api(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Dict[str, Any]:
@@ -138,11 +137,11 @@ class BananaClient:
         return self._validate_response(response)
     
     # Utility Methods
-    def _return_results(self, results: Dict[str, Any], json_results: Optional[bool] = None, duration: Optional[float] = None) -> Union[Dict[str, Any], ModelResults]:
+    def _return_results(self, results: Dict[str, Any], duration: Optional[float] = None) -> Dict[str, Any]:
         """
         Helper Method to return results
         """
-        result =  {
+        return  {
             "id": results["id"],
             "message": results["message"],
             "created": results["created"],
@@ -150,9 +149,6 @@ class BananaClient:
             "modelOutputs": results["modelOutputs"],
             "duration": timer(duration) if duration else None,
         }
-        if json_results is None: json_results = self.json_results
-        if json_results: return result
-        return ModelResults(**result)
 
 
     def _validate_response(self, response: httpx.Response, ignore_errors: bool = True):
@@ -209,26 +205,136 @@ class BananaClient:
         if save_config: self.config.save_config(config_path or self.config_path)
     
 
-    async def async_run(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Union[Dict[str, Any], ModelResults]:
+    async def async_run(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Dict[str, Any]:
         """
         Call the model with the given inputs
         """
         return await self.async_call_api(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
 
     
-    def run(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Union[Dict[str, Any], ModelResults]:
+    def run(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Dict[str, Any]:
         """
         Call the model with the given inputs
         """
         return self.call_api(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
     
     
-    def __call__(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Union[Dict[str, Any], ModelResults]:
+    def __call__(self, model_inputs: Any, model_name: Optional[str] = None, start_only: bool = False, ignore_errors: bool = False, timeout: Optional[int] = None, **kwargs) -> Dict[str, Any]:
         """
         Call the model with the given inputs
         """
         return self.call_api(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
+
+class BananaLogs:
+    config: BananaConfig = BananaConfig
+    server_url: str = 'https://logs.banana.dev'
+    log_results: Dict[str, Dict[Any, Any]] = {'builds': {}}
+
+    @classmethod
+    def get_params(cls):
+        return {
+            'headers': {'Content-Type': 'application/json'},
+            'json': {'apiKey': cls.config.apikey},
+        }
+
+    # Base Methods
+
+    @classmethod
+    def fetch_logs(cls, ignore_errors: bool = True, **kwargs) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Fetch the logs from the server
+        """
+        response = httpx.Client().post(cls.server_url, **cls.get_params(), **kwargs)
+        try:
+            return response.json()
+        except Exception as e:
+            if not ignore_errors: raise ValueError(f"Server error: {e}") from e
+            logger.error(f"Server error: {e}")
+            return None
     
+    @classmethod
+    async def async_fetch_logs(cls, ignore_errors: bool = True, **kwargs) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Fetch the logs from the server
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.post(cls.server_url, **cls.get_params(), **kwargs)
+        try:
+            return response.json()
+        except Exception as e:
+            if not ignore_errors: raise ValueError(f"Server error: {e}") from e
+            logger.error(f"Server error: {e}")
+            return None
+    
+    @classmethod
+    def get_logs(cls, limit: int = 10, ignore_errors: bool = True, _type: str = 'builds', **kwargs):
+        """
+        Get the logs from the server
+        """
+        logs = cls.fetch_logs(ignore_errors = ignore_errors, **kwargs)
+        if logs is None: return None
+        if logs.get(_type):
+            cls.log_results[_type].update({build['ID']: build for build in logs[_type]})
+        if _type != 'all':
+            return logs[_type][:limit] if limit else logs.get(_type, [])
+        return logs
+
+    @classmethod
+    async def async_get_logs(cls, limit: int = 10, ignore_errors: bool = True, _type: str = 'builds', **kwargs):
+        """
+        Get the logs from the server
+        """
+        logs = await cls.async_fetch_logs(ignore_errors = ignore_errors, **kwargs)
+        if logs is None: return None
+        if logs.get(_type):
+            cls.log_results[_type].update({build['ID']: build for build in logs[_type]})
+        if _type != 'all':
+            return logs[_type][:limit] if limit else logs.get(_type, [])
+        return logs
+
+    @classmethod
+    def display(cls, log_events: List[Dict[str, Any]], print_limit: int = None, **kwargs):
+        """
+        Display the logs
+        """
+        _print_id = 0
+        if print_limit: log_events = reversed(log_events)
+        for event in log_events:
+            logger.info(f'{event["ID"]} - {event["name"]} - {event["timestamp"]} - {event["modelKey"]}')
+            log_msg = event.get('logs')
+            if log_msg:
+                msgs = log_msg.split('\x1b')
+                for msg in msgs:
+                    logger.info(msg)
+                    _print_id += 1
+                    if print_limit and _print_id >= print_limit: 
+                        break
+
+
+    @classmethod
+    def print_logs(cls, limit: int = 10, print_limit: int = 50, ignore_errors: bool = True, _type: str = 'builds', **kwargs):
+        """
+        Get the logs from the server
+        """
+        logs = cls.get_logs(limit = limit, ignore_errors = ignore_errors, _type = _type, **kwargs)
+        if logs is None: return None
+        for log in logs:
+            log_events = log.get('events', [])
+            cls.display(log_events, print_limit = print_limit)
+            
+
+    @classmethod
+    async def async_print_logs(cls, limit: int = 10, print_limit: int = 50, ignore_errors: bool = True, _type: str = 'builds', **kwargs):
+        """
+        Get the logs from the server
+        """
+        logs = await cls.async_get_logs(limit = limit, ignore_errors = ignore_errors, _type = _type, **kwargs)
+        if logs is None: return None
+        for log in logs:
+            log_events = log.get('events', [])
+            cls.display(log_events, print_limit = print_limit)
+            
+
 
 ## Compatibility Class 
 
@@ -244,7 +350,6 @@ class BananaRun:
         model_key: Optional[str] = None,
         config_path: Optional[str] = None, 
         default_timeout: int = 30, 
-        json_results: bool = True, 
         overwrite: bool = False,
         **kwargs
         ):
@@ -259,7 +364,6 @@ class BananaRun:
                 model_key = model_key,
                 config_path = config_path,
                 default_timeout = default_timeout,
-                json_results = json_results,
                 **kwargs
             )
 
@@ -274,7 +378,7 @@ class BananaRun:
         apikey: Optional[str] = None, 
         model_key: Optional[str] = None, 
         **kwargs
-    ) -> Union[Dict[str, Any], ModelResults]:
+    ) -> Dict[str, Any]:
         cls.init_api(model_name = model_name, model_key = model_key, apikey = apikey, overwrite = (apikey and model_key), **kwargs)
         return cls.api.run(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
     
@@ -318,7 +422,7 @@ class BananaRun:
         apikey: Optional[str] = None, 
         model_key: Optional[str] = None, 
         **kwargs
-    ) -> Union[Dict[str, Any], ModelResults]:
+    ) -> Dict[str, Any]:
         cls.init_api(model_name = model_name, model_key = model_key, apikey = apikey, overwrite = (apikey and model_key), **kwargs)
         return await cls.api.async_run(model_inputs = model_inputs, model_name = model_name, start_only = start_only, ignore_errors = ignore_errors, timeout = timeout, **kwargs)
     

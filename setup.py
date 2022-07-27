@@ -6,11 +6,11 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 # Added requirements
-requirements = [
-    'httpx',
-    'pydantic',
-    'loguru'
-]
+# requirements = [
+#     'httpx',
+#     #'pydantic',
+#     'loguru'
+# ]
 
 setup(
   name = 'banana_dev',
@@ -25,13 +25,18 @@ setup(
   url = 'https://www.banana.dev',
   keywords = ['Banana client', 'API wrapper', 'Banana', 'SDK'],
   setup_requires = ['wheel'],
+  # these deps are no longer needed
+#   install_requires=[
+#     "certifi==2021.10.8", # these deps are no longer needed
+#     "charset-normalizer==2.0.7",
+#     "idna==3.3",
+#     "requests==2.26.0",
+#     "urllib3==1.26.7",
+#   ] + requirements,
   install_requires=[
-    "certifi==2021.10.8",
-    "charset-normalizer==2.0.7",
-    "idna==3.3",
-    "requests==2.26.0",
-    "urllib3==1.26.7",
-  ] + requirements,
+    "httpx",
+    "loguru",
+  ],
   classifiers=[
     'Development Status :: 5 - Production/Stable',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
     'Intended Audience :: Developers',

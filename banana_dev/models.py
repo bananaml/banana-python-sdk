@@ -1,18 +1,19 @@
-from pydantic import BaseModel
+from dataclasses import dataclass
 from typing import Any, Optional
 
-
-class BananaModel(BaseModel):
+@dataclass
+class BananaModel:
     """
     Base model for all Banana models
     """
     name: str
     key: str
 
-class ModelResults(BaseModel):
-    id: str
-    message: str
-    created: str
-    apiVersion: str
-    modelOutputs: Any
-    duration: Optional[float] = None
+# @dataclass
+# class ModelResults:
+#     id: str
+#     message: str
+#     created: str
+#     apiVersion: str
+#     modelOutputs: Any
+#     duration: Optional[float] = None
