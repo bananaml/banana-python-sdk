@@ -53,7 +53,7 @@ def check_main(api_key, call_id):
 # Takes in start params and returns the full server json response
 def start_api(api_key, model_key, model_inputs, start_only=False):
     global endpoint
-    route_start = "start/v3/"
+    route_start = "start/v4/"
     url_start = endpoint + route_start
 
     payload = {
@@ -83,7 +83,7 @@ def start_api(api_key, model_key, model_inputs, start_only=False):
 # Takes in call_id to return the server response
 def check_api(api_key, call_id):
     global endpoint
-    route_check = "check/v3/"
+    route_check = "check/v4/"
     url_check = endpoint + route_check
     # Poll server for completed task
 
