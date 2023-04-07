@@ -65,7 +65,7 @@ def run_direct(model_inputs):
     global direct_call_endpoint
     response = requests.post(direct_call_endpoint, json=model_inputs)
     if response.status_code != 200:
-        raise Exception("server error: status code {}".format(response.status_code))
+        raise Exception("server error: status code: {}\content: {}".format(response.status_code, response.content))
     try:
         out = response.json()
     except:
