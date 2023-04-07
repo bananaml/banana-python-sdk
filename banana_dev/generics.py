@@ -26,7 +26,7 @@ if 'BANANA_SERVER' in os.environ:
 # ___________________________________
 
 def run_main(api_key, model_key, model_inputs):
-    # run against self-hosted potassiun server if being ran
+    # run against self-hosted potassiun server if BANANA_SERVER was set
     if is_direct:
         return run_direct(model_inputs)
 
