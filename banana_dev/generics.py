@@ -18,9 +18,9 @@ direct_call_endpoint = "http://localhost:8000/"
 is_direct = False
 if 'BANANA_SERVER' in os.environ:
     is_direct = True    
-    print("Routing calls directly to server hosted at", direct_call_endpoint)
     if os.getenv("BANANA_SERVER") != "local":
         direct_call_endpoint = os.getenv("BANANA_SERVER")
+    print("Routing calls directly to server hosted at", direct_call_endpoint)
 
 # THE MAIN FUNCTIONS
 # ___________________________________
