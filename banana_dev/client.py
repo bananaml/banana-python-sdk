@@ -12,10 +12,10 @@ class ClientException(Exception):
         super().__init__(self.message)
 
 class Client():
-    def __init__(self, api_key, model_key, base_url):
+    def __init__(self, api_key, model_key, url):
         self.api_key = api_key
         self.model_key = model_key
-        self.base_url = base_url
+        self.url = url
 
     def call(self, route: str, json: dict = {}, headers: dict = {}, use_replica: Union[str, None] = None, retry=True, retry_timeout = 300):
         headers["Content-Type"] = "application/json"
@@ -23,11 +23,12 @@ class Client():
         headers['X-BANANA-MODEL-KEY'] = self.model_key
         if use_replica != None:
             headers["X-USE-REPLICA"] = use_replica
-        endpoint = self.base_url.rstrip("/") + "/" + route.lstrip("/")
+        endpoint = self.url.rstrip("/") + "/" + route.lstrip("/")
 
         backoff_interval = 0.1 # seed for exponential backoff
         start = time.time()
-        i = 0
+
+        # start retry loop
         while True:
             if time.time() - start > retry_timeout:
                 raise ClientException(message="Retry timeout exceeded")
