@@ -79,8 +79,7 @@ class Client():
             
             # banana (or users server) had an unrecoverable error -> error
             elif res.status_code == 500:
-                if not retry:
-                    raise ClientException(res=res)
+                raise ClientException(res=res)
             
             # banana had a temporary error -> retry
             elif res.status_code == 503:
