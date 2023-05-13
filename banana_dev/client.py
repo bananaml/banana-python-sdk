@@ -12,10 +12,11 @@ class ClientException(Exception):
         super().__init__(self.message)
 
 class Client():
-    def __init__(self, api_key, model_key, url):
+    def __init__(self, api_key, model_key, url, verbose = True):
         self.api_key = api_key
         self.model_key = model_key
         self.url = url
+        self.verbose = verbose
 
     def call(self, route: str, json: dict = {}, headers: dict = {}, use_replica: Union[str, None] = None, retry=True, retry_timeout = 300):
         headers["Content-Type"] = "application/json"
@@ -27,15 +28,27 @@ class Client():
 
         backoff_interval = 0.1 # seed for exponential backoff
         start = time.time()
+        first_call = True
 
         # start retry loop
         while True:
             if time.time() - start > retry_timeout:
                 raise ClientException(message="Retry timeout exceeded")
             
+            if first_call:
+                first_call = False
+            else:
+                if self.verbose:
+                    print("Retrying...")
+            
             backoff_interval *= 2
             
             res = requests.post(endpoint, json=json, headers=headers)
+
+            if self.verbose:
+                if res.status_code != 200:
+                    print("Status code:", res.status_code)
+                    print(res.text)
             
             # success case -> return json
             if res.status_code == 200:
