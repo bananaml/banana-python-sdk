@@ -102,4 +102,4 @@ class Client():
                 continue
 
             else:
-                raise ClientException(message="unexpected http response code: " + res.status_code)
+                raise ClientException(message="unexpected http response code: " + str(res.status_code))
