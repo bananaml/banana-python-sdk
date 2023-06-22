@@ -8,7 +8,7 @@ long_description = (this_directory / "README.md").read_text()
 setup(
     name='banana_dev_staging',
     packages=['banana_dev_staging'],
-    version='5.0.0',
+    version='5.0.1',
     license='MIT',
     # Give a short description about your library
     description='The banana package is a python client to interact with your Potassium servers hosted on Banana',
