@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple
 import requests, time
 
 class ClientException(Exception):
@@ -12,18 +12,18 @@ class ClientException(Exception):
         super().__init__(self.message)
 
 class Client():
+    "The Banana client class is for interracting with a specific model on Banana."
     def __init__(self, api_key, model_key, url, verbose = True):
         self.api_key = api_key
         self.model_key = model_key
         self.url = url
         self.verbose = verbose
 
-    def call(self, route: str, json: dict = {}, headers: dict = {}, use_replica: Union[str, None] = None, retry=True, retry_timeout = 300):
+    "Call a route on the Banana server with a POST request"
+    def call(self, route: str, json: dict = {}, headers: dict = {}, retry=True, retry_timeout = 300) -> Tuple[dict, dict]:
         headers["Content-Type"] = "application/json"
         headers['X-BANANA-API-KEY'] = self.api_key
         headers['X-BANANA-MODEL-KEY'] = self.model_key
-        if use_replica != None:
-            headers["X-USE-REPLICA"] = use_replica
         endpoint = self.url.rstrip("/") + "/" + route.lstrip("/")
 
         backoff_interval = 0.1 # seed for exponential backoff
