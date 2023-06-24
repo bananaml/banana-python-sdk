@@ -41,7 +41,7 @@ class Client():
                 if self.verbose:
                     print("Retrying...")
             
-            backoff_interval *= 2
+            backoff_interval = min(backoff_interval*2, 3)
             
             res = requests.post(endpoint, json=json, headers=headers)
 
