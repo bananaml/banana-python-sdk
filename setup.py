@@ -8,7 +8,7 @@ long_description = (this_directory / "README.md").read_text()
 setup(
     name='banana_dev',
     packages=['banana_dev'],
-    version='5.0.0',
+    version='5.0.1',
     license='MIT',
     # Give a short description about your library
     description='The banana package is a python client to interact with your machine learning models hosted on Banana',
