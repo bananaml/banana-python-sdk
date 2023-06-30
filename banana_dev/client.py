@@ -100,6 +100,12 @@ class Client():
                     raise ClientException(res=res)
                 time.sleep(backoff_interval)
                 continue
+                
+            # gateway timeout
+            elif res.status_code == 504:
+                message="Reached timeout limit of 5min. To avoid this we recommend using a app.background() handler."
+                raise ClientException(message=message)
+
 
             else:
                 raise ClientException(message="unexpected http response code: " + str(res.status_code))

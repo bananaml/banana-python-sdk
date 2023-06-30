@@ -20,38 +20,22 @@ If deploying to prod:
 ### Run:
 
 ```python
-import banana_dev as banana
+from banana_dev import Client
 
-# Your credentials. Can be empty strings if testing against a local server.
-api_key = "demo" # YOUR_API_KEY
-model_key = "carrot" # YOUR_MODEL_KEY
+# Create a reference to your model on Banana
+my_model = Client(
+    api_key="YOUR_API_KEY", # Found in dashboard
+    model_key="YOUR_MODEL_KEY", # Found in model view in dashboard
+    url="https://YOUR_URL.run.banana.dev", # Found in model view in dashboard
+)
 
-model_inputs = {
-    # a json specific to your model. For example:
-    "imageURL":  "https://demo-images-banana.s3.us-west-1.amazonaws.com/image2.jpg"
+# Specify the model's input JSON
+inputs = {
+    "prompt": "In the summer I like [MASK].",
 }
 
-out = banana.run(api_key, model_key, model_inputs)
-print(out)
+# Call your model's inference endpoint on Banana
+result, meta = my_model.call("/", inputs)
+print(result)
 ```
 
-Return type:
-```python
-{
-    "id": "12345678-1234-1234-1234-123456789012", 
-    "message": "success", 
-    "created": 1649712752, 
-    "apiVersion": "26 Nov 2021", 
-    "modelOutputs": [
-        {
-            # a json specific to your model. In this example, the caption of the image
-            "caption": "a baseball player throwing a ball"
-        }
-    ]
-}
-```
-
-Parse the server output:
-```python
-model_out = out["modelOutputs"][0]
-```
