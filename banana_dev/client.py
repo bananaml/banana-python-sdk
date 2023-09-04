@@ -1,5 +1,6 @@
 from typing import Union, Tuple
 import requests, time
+from uuid import uuid4
 
 class ClientException(Exception):
     "Raised on errors from Banana client"
@@ -24,6 +25,8 @@ class Client():
         headers["Content-Type"] = "application/json"
         headers['X-BANANA-API-KEY'] = self.api_key
         headers['X-BANANA-MODEL-KEY'] = self.model_key
+        headers['X-BANANA-REQUEST-ID'] = str(uuid4()) # we use the same uuid to track all retries
+
         endpoint = self.url.rstrip("/") + "/" + route.lstrip("/")
 
         backoff_interval = 0.1 # seed for exponential backoff
@@ -42,7 +45,6 @@ class Client():
                     print("Retrying...")
             
             backoff_interval = min(backoff_interval*2, 3)
-            
             res = requests.post(endpoint, json=json, headers=headers)
 
             if self.verbose:
@@ -105,7 +107,6 @@ class Client():
             elif res.status_code == 504:
                 message="Reached timeout limit of 5min. To avoid this we recommend using a app.background() handler."
                 raise ClientException(message=message)
-
 
             else:
                 raise ClientException(message="unexpected http response code: " + str(res.status_code))
