@@ -13,18 +13,16 @@ class ClientException(Exception):
         super().__init__(self.message)
 
 class Client():
-    "The Banana client class is for interracting with a specific model on Banana."
-    def __init__(self, api_key, model_key, url, verbose = True):
+    "The Banana client class is for interracting with a specific project on Banana."
+    def __init__(self, api_key, url, verbosity = "DEBUG"):
         self.api_key = api_key
-        self.model_key = model_key
         self.url = url
-        self.verbose = verbose
+        self.verbosity = verbosity
 
     "Call a route on the Banana server with a POST request"
     def call(self, route: str, json: dict = {}, headers: dict = {}, retry=True, retry_timeout = 300) -> Tuple[dict, dict]:
         headers["Content-Type"] = "application/json"
         headers['X-BANANA-API-KEY'] = self.api_key
-        headers['X-BANANA-MODEL-KEY'] = self.model_key
         headers['X-BANANA-REQUEST-ID'] = str(uuid4()) # we use the same uuid to track all retries
 
         endpoint = self.url.rstrip("/") + "/" + route.lstrip("/")
@@ -41,13 +39,13 @@ class Client():
             if first_call:
                 first_call = False
             else:
-                if self.verbose:
+                if self.verbosity == "DEBUG":
                     print("Retrying...")
             
             backoff_interval = min(backoff_interval*2, 3)
             res = requests.post(endpoint, json=json, headers=headers)
 
-            if self.verbose:
+            if self.verbosity == "DEBUG":
                 if res.status_code != 200:
                     print("Status code:", res.status_code)
                     print(res.text)
