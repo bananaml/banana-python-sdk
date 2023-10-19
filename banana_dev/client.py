@@ -19,6 +19,10 @@ class Client():
         self.url = url
         self.verbosity = verbosity
 
+    def warmup(self) -> Tuple[dict, dict]:
+        "Warm up the Potassium server"
+        return self.call("/_k/warmup", json={}, headers={}, retry=False)
+
     "Call a route on the Banana server with a POST request"
     def call(self, route: str, json: dict = {}, headers: dict = {}, retry=True, retry_timeout = 300) -> Tuple[dict, dict]:
         headers["Content-Type"] = "application/json"
