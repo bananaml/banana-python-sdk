@@ -1,3 +1,4 @@
+from typing import Tuple
 import requests
 
 
@@ -8,18 +9,18 @@ class API():
         self.api_key = api_key.strip()
 
     "Get all projects under the team account"
-    def listProjects(self, query: dict = {}) -> dict:
+    def listProjects(self, query: dict = {}) -> Tuple[dict, int]:
         return self.__call("GET", "projects", query)
 
     "Get a specific project by ID"
-    def getProject(self, project_id: str, query: dict = {}) -> dict:
+    def getProject(self, project_id: str, query: dict = {}) -> Tuple[dict, int]:
         return self.__call("GET", f"projects/{project_id}", query)
     
     "Update a project's settings"
-    def updateProject(self, project_id: str, json: dict = {}) -> dict:
+    def updateProject(self, project_id: str, json: dict = {}) -> Tuple[dict, int]:
         return self.__call("PUT", f"projects/{project_id}", json)
 
-    def __call(self, method: str, route: str, data: dict = {}) -> dict:
+    def __call(self, method: str, route: str, data: dict = {}) -> Tuple[dict, int]:
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -36,6 +37,6 @@ class API():
             res = requests.get(endpoint, params=data, headers=headers)
 
         try:
-            return res.json()
+            return res.json(), res.status_code
         except:
-            return {}
+            return {}, res.status_code

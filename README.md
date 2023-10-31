@@ -23,14 +23,14 @@ Create some script
 from banana_dev import API
 
 api = API("11111111-1111-1111-1111-111111111111")
-projects = api.listProjects()
-print('list',projects)
+projects, status = api.listProjects()
+print('list',projects,status)
 
-project = api.getProject(projects["results"][0]["id"])
-print('get',project)
+project, status = api.getProject(projects["results"][0]["id"])
+print('get',project,status)
 
-updatedProject = api.updateProject(projects["results"][0]["id"], {"maxReplicas": 2})
-print('update',updatedProject)
+updatedProject, status = api.updateProject(projects["results"][0]["id"], {"maxReplicas": 2})
+print('update',updatedProject,status)
 ```
 
 Run it
