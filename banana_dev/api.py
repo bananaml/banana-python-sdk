@@ -36,7 +36,4 @@ class API():
         elif method == "GET":
             res = requests.get(endpoint, params=data, headers=headers)
 
-        try:
-            return res.json(), res.status_code
-        except:
-            return {}, res.status_code
+        return res.json(), res.status_code
