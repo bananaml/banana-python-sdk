@@ -13,7 +13,7 @@ class ClientException(Exception):
         super().__init__(self.message)
 
 class Client():
-    "The Banana client class is for interracting with a specific project on Banana."
+    "The Banana client class is for interacting with a specific project on Banana."
     def __init__(self, api_key, url, verbosity = "DEBUG"):
         self.api_key = api_key
         self.url = url
